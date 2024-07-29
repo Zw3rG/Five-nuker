@@ -16,7 +16,8 @@ import shutil
 import multiprocessing
 import keyboard
 
-os.system("title Five-Nuker")
+if os.name=='nt':
+    os.system("title Five-Nuker")
 
 drawer = Drawer()
 
@@ -51,7 +52,7 @@ if os.path.exists("updated"):
     clear()
 
 if __name__ == '__main__':
-    local_version = str("0.5")
+    local_version = str("0.5.1")
 
     http = urllib3.PoolManager()
 
@@ -226,7 +227,8 @@ if __name__ == '__main__':
         with open(f"cfg/themes/default.json", "w") as theme:
                     json.dump(def_theme,theme,indent=3)
     try:
-        with open(f"cfg/themes/{config["Selected_theme"]}.json", "r") as thm:
+        sel_theme = config["Selected_theme"]
+        with open(f"cfg/themes/{sel_theme}.json", "r") as thm:
             theme = json.loads(thm.read())
     except Exception as e:
         print("failed to load theme :(")
@@ -253,7 +255,8 @@ if __name__ == '__main__':
     @bot.event
     async def on_ready():
         clear()
-        os.system(f"title Five Nuker - Online - {bot.user} - ")
+        if os.name=='nt':
+            os.system(f"title Five Nuker - Online - {bot.user} - ")
         if not cmd_mode:
             print(drawer.CenterColor(text=txt,colors=drawer.converting(theme["logo_pallete"]), steps=theme["logo_gradient_steps"],type=theme["logo_gradient_type"]))
             print(drawer.CenterColor(text=f"You loggen by {bot.user}",colors=drawer.converting(theme["logged_in_pallete"]), steps=theme["logged_in_gradient_steps"],type=theme["logged_in_gradient_type"]))
@@ -278,7 +281,9 @@ if __name__ == '__main__':
 cmd_mode = config["cmd mode"]
 
 async def launch_cmd():
-        print(f"{drawer.gradientText([(156, 0, 245),(0,0,0)],len("Five nuker"),"Five nuker","H")} v{local_version} © G1itch, KotdemontoK")
+        fn = "Five nuker"
+        watermark_type = "H"
+        print(f"{drawer.gradientText(colors=[(156, 0, 245),(0,0,0)],steps=10,text=fn,type=watermark_type)} v{local_version} © G1itch, KotdemontoK")
         print("")
         while True:
             cmd_command = input("Five nuker> ")
@@ -289,7 +294,7 @@ async def launch_cmd():
                     quit()
             elif cmd_command.startswith("cls") or cmd_command.startswith("clear"):
                     clear()
-                    print(f"{drawer.gradientText([(156, 0, 245),(0,0,0)],len("Five nuker"),"Five nuker","H")} v{local_version} ©G1itch, KotdemontoK")
+                    print(f"{drawer.gradientText(colors=[(156, 0, 245),(0,0,0)],steps=10,text=fn,type=watermark_type)} v{local_version} © G1itch, KotdemontoK")
                     print("")
             elif cmd_command.startswith("nuke"):
                     server_id=cmd_command.split(" ")
@@ -306,8 +311,17 @@ async def launch_cmd():
                         multiprocessing.Process(target=start_channels_create(curent_guild)).start()
                     if config["Ban on server nuke?"] == True:
                         create_task(banAll(curent_guild))
+                    nuke_prefix = config["nuke_prefix"]
+                    print(f"After completing the nuker to continue to use the nuker you need to activate it again with the command {nuke_prefix}on, it can be written anywhere, even in a chat with a bot the main thing where you are going to write it must be a bot \n")
+                    if config["only_whitelisted_people_can_activate_the_command_prompt"]:
+                        print("\nKeep in mind that in the config only_whitelisted_people_can_activate_the_command_prompt is set to true! Only whitelisted people can activate the bot! When the command prompt mode is active the bot will not react to any commands!")
+                    else:
+                        print("\nKeep in mind that in the config only_whitelisted_people_can_activate_the_command_prompt is set to false! Anyone can activate the command prompt mode and block the bot's work.")
+                    break
+            
             elif cmd_command.startswith("off"):
-                print(f"Heartbeat unlocked! run {config["nuke_prefix"]}on in any server(if that bot is out there, of course), any channel, even in bot dm's \nto access the command prompt")          
+                nuke_prefix = config["nuke_prefix"]
+                print(f"Heartbeat unlocked! run {nuke_prefix} on in any server(if that bot is out there, of course), any channel, even in bot dm's \nto access the command prompt")          
                 if config["only_whitelisted_people_can_activate_the_command_prompt"]:
                     print("\nKeep in mind that in the config only_whitelisted_people_can_activate_the_command_prompt is set to true! Only whitelisted people can activate the bot! When the command prompt mode is active the bot will not react to any commands!")
                 else:
@@ -361,7 +375,10 @@ async def delete_roles(guild: discord.Guild):
 
 
 async def banAll(ctx):
-    all_members_list = list(ctx.members)
+    if not cmd_mode:
+        all_members_list = list(ctx.guild.members)
+    else:
+         all_members_list = list(ctx.members)
     if not cmd_mode:
         all_members_list.remove(ctx.author)
     for i in config['whitelisted_ids']:
@@ -452,7 +469,7 @@ if __name__ == '__main__':
                             await message.delete()
                             for members in list(message.guild.members):
                                 await members.add_roles(r)
-            elif args[0] == config["nuke_prefix"]+"on":
+            elif args[0] == config["nuke_prefix"]+"on" and cmd_mode:
                 if config["only_whitelisted_people_can_activate_the_command_prompt"]:
                     if message.author.id in config['whitelisted_ids']:
                         await launch_cmd()          
